@@ -65,7 +65,7 @@ endif
 #   To stop and cleanup the environment use: make destroy
 
 lean:	DOCKER_COMPOSE_FILE=docker-compose-lean.yml
-lean:	download-src download-cli docker-pull-lean run hello-world quick-start-info
+lean:	download-src download-cli docker-pull-lean run yolo quick-start-info
 
 quick-start: download-src download-cli docker-pull run quick-start-pause hello-world quick-start-info
 
@@ -150,6 +150,7 @@ docker-pull-full:
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-nodejs-v12:${DOCKER_IMAGE_TAG}
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-nodejs-v14:${DOCKER_IMAGE_TAG}
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-python-v3.7:${DOCKER_IMAGE_TAG}
+	docker pull $(DOCKER_IMAGE_PREFIX)/action-python-v3.9:${DOCKER_IMAGE_TAG}
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-swift-v5.1:${DOCKER_IMAGE_TAG}
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-swift-v5.3:${DOCKER_IMAGE_TAG}
 	docker pull $(DOCKER_IMAGE_PREFIX)/action-swift-v5.4:${DOCKER_IMAGE_TAG}
@@ -321,7 +322,7 @@ wait-for-docker-compose-up:
 	until [ "$$up" -eq "$$servicescount" ]; do \
 		echo_output; \
 	  sleep 1; \
-	  up=`$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker-compose --project-name openwhisk ps | grep Up -c`; \
+	  up=`$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker-compose --project-name openwhisk ps | grep "running" -c`; \
 	  if [ "$$up" != "$$servicescount" ]; then \
 	    if [ "$$trycount" -eq "$$trycounttimeout" ]; then \
 				echo "\n$$(docker_ps)"; \
@@ -428,6 +429,42 @@ hello-world: create-hello-world-function
 	echo "$$(tput setaf 1)deleting the function ...$$(tput sgr0)"
 	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete hello
 	rm hello.js
+
+# This task creates and runs a statefun-app function
+#   1. It creates the function
+#   2. It executes it
+#   3. At the end it deletes it
+.PHONY: yolo
+yolo: # build the docker image?
+#	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolo
+#	echo "deploying yolo ... "
+	echo "$$(tput setaf 4)adding the function to whisk ...$$(tput sgr0)"
+	rm yolo.zip
+	zip -j -r - ./app | docker run -i adamhas/statefun-action:6 -compile main > yolo.zip
+#	zip yolo.zip -j ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py ./../../app/requirements.txt
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create yolo --kind python:3 yolo.zip
+#	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update "/guest/yolo" --web true
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update yolo yolo.zip --docker adamhas/statefun-action:6
+
+
+.PHONY: invokeyolo
+invokeyolo:
+	echo "$$(tput setaf 4)invoking the function ...$$(tput sgr0)"
+	res=`WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action invoke yolo --blocking --result` \
+	    && echo "invocation result:" $$res
+
+.PHONY: printlogs
+printlogs: 
+	tail -n 200 $(TMP_HOME)/tmp/openwhisk/invoker/logs/invoker-local_logs.log $(TMP_HOME)/tmp/openwhisk/controller/logs/controller-local_logs.log
+
+
+.PHONY: rmyolo
+rmyolo: # build the docker image?
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolo
+
+.PHONY: list
+list:
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api list
 
 .PHONY: create-hello-world-function
 create-hello-world-function:
