@@ -19,6 +19,7 @@
 
 # Test binary, built with `go test -c`
 *.test
+actionloop-starter-kit/tests/*
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
