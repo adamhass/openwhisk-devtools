@@ -8,7 +8,7 @@
 *.iml
 *.code-workspace
 **/.sts4-cache
-.DS_Store
+*/.DS_Store
 
 # Go Binaries for programs and plugins
 *.exe

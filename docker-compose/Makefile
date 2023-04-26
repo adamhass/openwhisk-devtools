@@ -65,7 +65,8 @@ endif
 #   To stop and cleanup the environment use: make destroy
 
 lean:	DOCKER_COMPOSE_FILE=docker-compose-lean.yml
-lean:	download-src download-cli docker-pull-lean run yolo quick-start-info
+lean:	download-src download-cli docker-pull-lean run yolo
+# quick-start-info
 
 quick-start: download-src download-cli docker-pull run quick-start-pause hello-world quick-start-info
 
@@ -439,13 +440,20 @@ yolo: # build the docker image?
 #	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolo
 #	echo "deploying yolo ... "
 	echo "$$(tput setaf 4)adding the function to whisk ...$$(tput sgr0)"
-	rm yolo.zip
-	zip -j -r - ./app | docker run -i adamhas/statefun-action:6 -compile main > yolo.zip
-#	zip yolo.zip -j ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py ./../../app/requirements.txt
-	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create yolo --kind python:3 yolo.zip
-#	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update "/guest/yolo" --web true
-	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update yolo yolo.zip --docker adamhas/statefun-action:6
-
+	rm yolov3.zip
+	cp ./../../app/functions.py ./../../app/__main__.py
+	zip -j yolov3.zip ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py
+#   ./../../app/requirements.txt
+	rm ./../../app/__main__.py
+#	| docker run -i adamhas/statefun-action:6 -compile main > yolo.zip
+#	zip -j - ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py ./../../app/requirements.txt
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create yolov3 --kind python:3 yolov3.zip --web true --web-secure false --memory 1024
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api create /guest/yolov3 POST yolov3 --response-type json
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create batcher --kind python:3 yolov3.zip --web true --web-secure false --memory 1024
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api create /guest/batcher POST batcher --response-type json
+#	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update "/guest/yolov3" --web true --web-secure false
+#	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update yolov3 yolov3.zip --docker adamhas/statefun-action:8
+#     											  -i api create /hello /world get hello --response-type json | tail -n 1`
 
 .PHONY: invokeyolo
 invokeyolo:
@@ -457,10 +465,9 @@ invokeyolo:
 printlogs: 
 	tail -n 200 $(TMP_HOME)/tmp/openwhisk/invoker/logs/invoker-local_logs.log $(TMP_HOME)/tmp/openwhisk/controller/logs/controller-local_logs.log
 
-
 .PHONY: rmyolo
 rmyolo: # build the docker image?
-	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolo
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolov3
 
 .PHONY: list
 list:

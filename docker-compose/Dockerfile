@@ -1,6 +1,4 @@
 FROM openwhisk/action-python-v3.9
-RUN printf 'opencv-python\nnumpy\nkafka-python\ntensorflow\nkeras\npillow\napache-flink-statefun\naiohttp'>>requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /opt/build
 ENV OPENCV_VERSION="4.5.1"
 RUN apt-get -qq update \
@@ -50,4 +48,8 @@ RUN apt-get -qq update \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get -qq autoremove \
     && apt-get -qq clean
+COPY ./model.h5 /model.h5
+RUN printf 'opencv-python\nnumpy\nkafka-python\ntensorflow\nkeras\npillow\napache-flink-statefun\naiohttp'>>requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install "opencv-python-headless<4.3"
 ENTRYPOINT ["/bin/proxy"]
