@@ -1,0 +1,3 @@
+[submodule "openwhisk-devtools"]
+	path = openwhisk-devtools
+	url = git@github.com:adamhass/openwhisk-devtools.git
