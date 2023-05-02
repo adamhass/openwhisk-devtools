@@ -44,8 +44,7 @@ WSK_CLI ?= $(OPENWHISK_PROJECT_HOME)/bin/wsk
 WSK_CLI_VERSION ?= latest
 WSK_CONFIG_FILE=$(CURDIR)/.wskprops
 OPEN_WHISK_DB_PREFIX ?= local_
-TMP_HOME = $(shell eval echo ~$(USER))
-
++TMP_HOME := $(shell echo $$HOME)/tmp
 
 DOCKER_KERNEL ?= $(shell docker version --format "{{.Server.KernelVersion}}")
 DOCKER_COMPOSE_FILE=docker-compose.yml
@@ -243,6 +242,7 @@ setup:
 	printf "DOCKER_REGISTRY=$(DOCKER_REGISTRY)\n" >> $(TMP_HOME)/tmp/openwhisk/local.env
 	printf "DOCKER_IMAGE_PREFIX=$(DOCKER_IMAGE_PREFIX)\n" >> $(TMP_HOME)/tmp/openwhisk/local.env
 	printf "DOCKER_IMAGE_TAG=$(DOCKER_IMAGE_TAG)\n" >> $(TMP_HOME)/tmp/openwhisk/local.env
+	printf "TMP_HOME=$(TMP_HOME)\n" >> $(TMP_HOME)/tmp/openwhisk/local.env
 
 	echo "  ... preparing api-gateway configuration"
 	rm -rf $(TMP_HOME)/tmp/openwhisk/api-gateway-config
@@ -252,7 +252,7 @@ setup:
 	cp -r ./apigateway/* $(TMP_HOME)/tmp/openwhisk/api-gateway-config/api-gateway/
 	cp -r ./apigateway/rclone $(TMP_HOME)/tmp/openwhisk
 	echo "$(TMP_HOME)/tmp/openwhisk/local.env"
-	eval "$(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -p openwhisk up minio">&1 > $(TMP_HOME)/tmp/openwhisk/setup.log &
+	( set -o allexport; source "$(TMP_HOME)/tmp/openwhisk/local.env"; set +o allexport; docker compose --env-file "$(TMP_HOME)/tmp/openwhisk/local.env" -p openwhisk up minio ) > "$(TMP_HOME)/tmp/openwhisk/setup.log" 2>&1 &
 	echo "pinging minio"
 	until (curl --silent http://$(DOCKER_HOST_IP):9001/ > /dev/null); do printf '.'; sleep 5; done
 	eval "$(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -p openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
