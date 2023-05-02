@@ -24,7 +24,7 @@ services:
       COUCHDB_USER: whisk_admin
       COUCHDB_PASSWORD: some_passw0rd
     volumes:
-      - $(TMP_HOME)/tmp/openwhisk/couchdb:/usr/local/var/lib/couchdb:rw
+      - $$(TMP_HOME)/tmp/openwhisk/couchdb:/usr/local/var/lib/couchdb:rw
 
   # KAFKA SERVICES
   zookeeper:
@@ -64,7 +64,7 @@ services:
       - kafka
     env_file:
       - ./docker-whisk-controller.env   # env vars shared
-      - $(TMP_HOME)/tmptest/openwhisk/local.env       # generated during make setup
+      - $$(TMP_HOME)/tmptest/openwhisk/local.env       # generated during make setup
     environment:
       COMPONENT_NAME: controller
       PORT: 8888
@@ -87,7 +87,7 @@ services:
       LOADBALANCER_HOST: ${DOCKER_COMPOSE_HOST}
       LOADBALANCER_HOST_PORT: 443
     volumes:
-      - $(TMP_HOME)/tmp/openwhisk/controller/logs:/logs
+      - $$(TMP_HOME)/tmp/openwhisk/controller/logs:/logs
     ports:
       - "8888:8888"
       - "2551:2551"
@@ -109,7 +109,7 @@ services:
       - kafka
     env_file:
       - ./docker-whisk-controller.env # env vars shared
-      - $(TMP_HOME)/tmp/openwhisk/local.env     # generated during make setup
+      - $$(TMP_HOME)/tmp/openwhisk/local.env     # generated during make setup
     environment:
       COMPONENT_NAME: invoker
       SERVICE_NAME: invoker0
@@ -132,7 +132,7 @@ services:
 
       WHISK_API_HOST_NAME: ${DOCKER_COMPOSE_HOST}
     volumes:
-      - $(TMP_HOME)/tmp/openwhisk/invoker/logs:/logs
+      - $$(TMP_HOME)/tmp/openwhisk/invoker/logs:/logs
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/containers:/containers
       - /sys/fs/cgroup:/sys/fs/cgroup
@@ -153,7 +153,7 @@ services:
       - MINIO_ACCESS_KEY=5VCTEQOQ0GR0NV1T67GN
       - MINIO_SECRET_KEY=8MBK5aJTR330V1sohz4n1i7W5Wv/jzahARNHUzi3
     volumes:
-      - $(TMP_HOME)/tmp/openwhisk/minio:/data:rw
+      - $$(TMP_HOME)/tmp/openwhisk/minio:/data:rw
     ports:
       - "9001:9000"
   redis:
@@ -177,9 +177,9 @@ services:
       - redis
       - minio
     volumes:
-      - $(TMP_HOME)/tmp/openwhisk/api-gateway-ssl:/etc/ssl:ro
-      - $(TMP_HOME)/tmp/openwhisk/api-gateway-config/api-gateway/generated-conf.d:/etc/api-gateway/generated-conf.d
-      - $(TMP_HOME)/tmp/openwhisk/rclone:/root/.config/rclone:rw
+      - $$(TMP_HOME)/tmp/openwhisk/api-gateway-ssl:/etc/ssl:ro
+      - $$(TMP_HOME)/tmp/openwhisk/api-gateway-config/api-gateway/generated-conf.d:/etc/api-gateway/generated-conf.d
+      - $$(TMP_HOME)/tmp/openwhisk/rclone:/root/.config/rclone:rw
     ports:
       - "80:80"
       - "443:443"
