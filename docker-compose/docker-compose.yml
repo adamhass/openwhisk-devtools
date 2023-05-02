@@ -87,7 +87,7 @@ services:
       LOADBALANCER_HOST: ${DOCKER_COMPOSE_HOST}
       LOADBALANCER_HOST_PORT: 443
     volumes:
-      - "$(TMP_HOME)/tmp/openwhisk/controller/logs:/logs"
+      - "${TMP_HOME}/tmp/openwhisk/controller/logs:/logs"
     ports:
       - "8888:8888"
       - "2551:2551"
