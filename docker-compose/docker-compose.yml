@@ -49,7 +49,7 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: kafka
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - $(TMP_HOME)/tmp/openwhisk/kafka:/kafka:rw
+      - $$(TMP_HOME)/tmp/openwhisk/kafka:/kafka:rw
 
   # WHISK CONTROLLER
   controller:
@@ -64,7 +64,7 @@ services:
       - kafka
     env_file:
       - ./docker-whisk-controller.env   # env vars shared
-      - ${HOME}/tmp/openwhisk/local.env       # generated during make setup
+      - $(TMP_HOME)/tmptest/openwhisk/local.env       # generated during make setup
     environment:
       COMPONENT_NAME: controller
       PORT: 8888
@@ -109,7 +109,7 @@ services:
       - kafka
     env_file:
       - ./docker-whisk-controller.env # env vars shared
-      - ${HOME}/tmp/openwhisk/local.env     # generated during make setup
+      - $(TMP_HOME)/tmp/openwhisk/local.env     # generated during make setup
     environment:
       COMPONENT_NAME: invoker
       SERVICE_NAME: invoker0
