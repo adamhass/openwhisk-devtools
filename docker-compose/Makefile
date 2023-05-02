@@ -252,13 +252,13 @@ setup:
 	cp -r ./apigateway/rclone $(TMP_HOME)/tmp/openwhisk
 	echo "$(TMP_HOME)/tmp/openwhisk/local.env"
 	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose -p openwhisk up minio 2>&1 > $(TMP_HOME)/tmp/openwhisk/setup.log &
-	echo "next"
+	echo "pinging minio"
 	until (curl --silent http://$(DOCKER_HOST_IP):9001/ > /dev/null); do printf '.'; sleep 5; done
 	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -p openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
 	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk run --rm --no-deps apigateway rclone copy --exclude .git /etc/api-gateway/ minio:api-gateway/
-	# $(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop minio
-	# $(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f minio
-
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop minio
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f minio
+	echo "Done with minio"
 	# Check if the user has provided SSL certificates, if not generate them
 	if [ -f "$(OPENWHISK_PROJECT_HOME)/ansible/roles/nginx/files/openwhisk-server-key.pem" ] && \
 		[ -f "$(OPENWHISK_PROJECT_HOME)/ansible/roles/nginx/files/openwhisk-server-cert.pem" ]; then \
