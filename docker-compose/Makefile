@@ -249,13 +249,16 @@ setup:
 	mkdir -p $(TMP_HOME)/tmp/openwhisk/minio
 	cp -r ./apigateway/* $(TMP_HOME)/tmp/openwhisk/api-gateway-config/api-gateway/
 	cp -r ./apigateway/rclone $(TMP_HOME)/tmp/openwhisk
+	echo "$(TMP_HOME)/tmp/openwhisk/local.env"
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker --version
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) which docker
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) $(shell which docker) --version
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose -p openwhisk up minio 2>&1 > $(TMP_HOME)/tmp/openwhisk/setup.log &
 
-	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --project-name openwhisk up minio 2>&1 > $(TMP_HOME)/tmp/openwhisk/setup.log &
-
-	echo "pinging minio... $(DOCKER_HOST_IP)"
+	@echo "pinging minio... $(DOCKER_HOST_IP)"
 	until (curl --silent http://$(DOCKER_HOST_IP):9001/ > /dev/null); do printf '.'; sleep 5; done
-	echo " ... OK"
-	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --project-name openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
+	@echo " ... OK"
+	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose -p openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
 	$(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --project-name openwhisk run --rm --no-deps apigateway rclone copy --exclude .git /etc/api-gateway/ minio:api-gateway/
 	# $(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --project-name openwhisk stop minio
 	# $(shell cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --project-name openwhisk rm -f minio

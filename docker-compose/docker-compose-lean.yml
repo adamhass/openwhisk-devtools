@@ -39,10 +39,10 @@ services:
       - ./../../module.yaml:/module.yaml
     environment:
       - FLINK_CONF_DIR=./
-    deploy:
-      resources:
-        reservations:
-          memory: 20G
+        #    deploy:
+        # resources:
+        #reservations:
+        #  memory: 20G
     depends_on:
       - redpanda-2
       - redpanda-1
