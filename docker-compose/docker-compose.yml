@@ -64,7 +64,7 @@ services:
       - kafka
     env_file:
       - ./docker-whisk-controller.env   # env vars shared
-      - $$(TMP_HOME)/tmptest/openwhisk/local.env       # generated during make setup
+      - "$TMP_HOME/tmp/openwhisk/local.env"       # generated during make setup
     environment:
       COMPONENT_NAME: controller
       PORT: 8888

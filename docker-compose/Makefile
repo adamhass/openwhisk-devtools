@@ -44,7 +44,7 @@ WSK_CLI ?= $(OPENWHISK_PROJECT_HOME)/bin/wsk
 WSK_CLI_VERSION ?= latest
 WSK_CONFIG_FILE=$(CURDIR)/.wskprops
 OPEN_WHISK_DB_PREFIX ?= local_
-TMP_HOME := $(shell echo $$HOME)/tmp
+TMP_HOME := $(shell echo $$HOME)
 
 DOCKER_KERNEL ?= $(shell docker version --format "{{.Server.KernelVersion}}")
 DOCKER_COMPOSE_FILE=docker-compose.yml
