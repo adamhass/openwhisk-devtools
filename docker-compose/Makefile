@@ -294,14 +294,14 @@ restart-invoker:
 
 .PHONY: start-docker-compose
 start-docker-compose:
-	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk -f $(DOCKER_COMPOSE_FILE) up 2>&1 > $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk -f $(DOCKER_COMPOSE_FILE) up >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log 2>&1 &
 
 .PHONY: wait-for-docker-compose-up
 wait-for-docker-compose-up:
 	echo "Waiting till all containers are powered up... ";
 	sleep 1;
 	@trycount=0; \
-	trycounttimeout=60; \
+	trycounttimeout=300; \
 	up=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep Up -c`; \
 	servicescount=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -f $(DOCKER_COMPOSE_FILE) config --services | wc -l | xargs`; \
 	docker_ps() { \
@@ -320,7 +320,7 @@ wait-for-docker-compose-up:
 	until [ "$$up" -eq "$$servicescount" ]; do \
 		echo_output; \
 	  sleep 1; \
-	  up=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep "running" -c`; \
+	  up=`docker compose --project-name openwhisk ps | grep "Up" -c`; \
 	  if [ "$$up" != "$$servicescount" ]; then \
 	    if [ "$$trycount" -eq "$$trycounttimeout" ]; then \
 				echo "\n$$(docker_ps)"; \
@@ -437,7 +437,7 @@ yolo: # build the docker image?
 #	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action delete yolo
 #	echo "deploying yolo ... "
 	echo "$$(tput setaf 4)adding the function to whisk ...$$(tput sgr0)"
-	rm yolov3.zip
+	rm -f yolov3.zip
 	cp ./../../app/functions.py ./../../app/__main__.py
 	zip -j yolov3.zip ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py
 #   ./../../app/requirements.txt
