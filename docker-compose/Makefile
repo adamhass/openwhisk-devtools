@@ -234,7 +234,6 @@ check-kafka-ports:
 
 .PHONY: setup
 setup:
-	echo $(TMP_HOME)
 	mkdir -p $(TMP_HOME)/tmp/openwhisk
 	> $(TMP_HOME)/tmp/openwhisk/local.env
 	printf "DOCKER_BINARY=$(DOCKER_BINARY)\n" >> $(TMP_HOME)/tmp/openwhisk/local.env
@@ -251,14 +250,12 @@ setup:
 	mkdir -p $(TMP_HOME)/tmp/openwhisk/minio
 	cp -r ./apigateway/* $(TMP_HOME)/tmp/openwhisk/api-gateway-config/api-gateway/
 	cp -r ./apigateway/rclone $(TMP_HOME)/tmp/openwhisk
-	echo "$(TMP_HOME)/tmp/openwhisk/local.env"
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file "$(TMP_HOME)/tmp/openwhisk/local.env" -p openwhisk up minio 2>&1 > "$(TMP_HOME)/tmp/openwhisk/setup.log" &
-	echo "pinging minio"
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up minio 2>&1 > "$(TMP_HOME)/tmp/openwhisk/setup.log" &
 	until (curl --silent http://$(DOCKER_HOST_IP):9001/ > /dev/null); do printf '.'; sleep 5; done
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -p openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk run --rm --no-deps apigateway rclone copy --exclude .git /etc/api-gateway/ minio:api-gateway/
-#	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop minio
-#	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f minio
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk run --rm --no-deps apigateway rclone mkdir minio:api-gateway
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk run --rm --no-deps apigateway rclone copy --exclude .git /etc/api-gateway/ minio:api-gateway/
+#	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop minio
+#	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f minio
 	echo "Done with minio"
 	# Check if the user has provided SSL certificates, if not generate them
 	if [ -f "$(OPENWHISK_PROJECT_HOME)/ansible/roles/nginx/files/openwhisk-server-key.pem" ] && \
@@ -272,32 +269,32 @@ setup:
 
 .PHONY: gw
 gw:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up apigateway
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up apigateway
 
 .PHONY: restart
 restart: stop rm start-docker-compose
 
 .PHONY: restart-controller
 restart-controller:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop controller
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f controller
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up controller 2>&1 >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop controller
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f controller
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up controller 2>&1 >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
 	echo "waiting for the controller to see the invoker is 'up' ... "
 	until (curl --silent http://$(DOCKER_HOST_IP):8888/invokers | grep "up"); do printf '.'; sleep 5; done
 
 .PHONY: restart-invoker
 restart-invoker:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop invoker
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f invoker
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop invoker
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f invoker
 	echo "waiting for the invoker to be marked 'down' ... "
 	until (curl --silent http://$(DOCKER_HOST_IP):8888/invokers | grep "down"); do printf '.'; sleep 5; done
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up invoker 2>&1 >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up invoker 2>&1 >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
 	echo "waiting for the invoker to be marked Healthy ... "
 	until (curl --silent http://$(DOCKER_HOST_IP):8888/invokers | grep "up"); do printf '.'; sleep 5; done
 
 .PHONY: start-docker-compose
 start-docker-compose:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk -f $(DOCKER_COMPOSE_FILE) up 2>&1 > $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk -f $(DOCKER_COMPOSE_FILE) up 2>&1 > $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
 
 .PHONY: wait-for-docker-compose-up
 wait-for-docker-compose-up:
@@ -305,8 +302,8 @@ wait-for-docker-compose-up:
 	sleep 1;
 	@trycount=0; \
 	trycounttimeout=60; \
-	up=`eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep Up -c`; \
-	servicescount=`eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -f $(DOCKER_COMPOSE_FILE) config --services | wc -l | xargs`; \
+	up=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep Up -c`; \
+	servicescount=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env -f $(DOCKER_COMPOSE_FILE) config --services | wc -l | xargs`; \
 	docker_ps() { \
 		docker ps --format 'table {{.Image}}\t{{.Status}}' --filter "label=com.docker.compose.project=openwhisk" -a; \
 	}; \
@@ -323,7 +320,7 @@ wait-for-docker-compose-up:
 	until [ "$$up" -eq "$$servicescount" ]; do \
 		echo_output; \
 	  sleep 1; \
-	  up=`eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep "running" -c`; \
+	  up=`docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk ps | grep "running" -c`; \
 	  if [ "$$up" != "$$servicescount" ]; then \
 	    if [ "$$trycount" -eq "$$trycounttimeout" ]; then \
 				echo "\n$$(docker_ps)"; \
@@ -339,11 +336,11 @@ wait-for-docker-compose-up:
 
 .PHONY: stop
 stop:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop
 
 .PHONY: rm
 rm:
-	eval $(cat $(TMP_HOME)/tmp/openwhisk/local.env) docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f
 
 .PHONY: init-couchdb
 init-couchdb:
