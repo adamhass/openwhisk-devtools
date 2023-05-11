@@ -9,7 +9,7 @@
 *.code-workspace
 **/.sts4-cache
 */.DS_Store
-
+*/*.zip
 # Go Binaries for programs and plugins
 *.exe
 *.exe~
