@@ -64,7 +64,7 @@ endif
 #   3. it runs a sample hello-world function
 #   To stop and cleanup the environment use: make destroy
 
-lean:	DOCKER_COMPOSE_FILE=docker-compose-lean.yml
+lean:	DOCKER_COMPOSE_FILE=docker-compose.yml
 lean:	run yolo
 lean-full: download-src download-cli docker-pull-lean run yolo
 # quick-start-info
@@ -282,6 +282,12 @@ restart-controller:
 	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up controller 2>&1 >> $(TMP_HOME)/tmp/openwhisk/docker-compose.log &
 	echo "waiting for the controller to see the invoker is 'up' ... "
 	until (curl --silent http://$(DOCKER_HOST_IP):8888/invokers | grep "up"); do printf '.'; sleep 5; done
+
+.PHONY: restart-statefun
+restart-statefun:
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk stop statefun
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk rm -f statefun
+	docker compose --env-file $(TMP_HOME)/tmp/openwhisk/local.env --project-name openwhisk up statefun
 
 .PHONY: restart-invoker
 restart-invoker:
