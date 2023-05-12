@@ -292,6 +292,7 @@ services:
       - PUBLIC_MANAGEDURL_PORT=9090
       - PUBLIC_MANAGEDURL_HOST=${DOCKER_COMPOSE_HOST}
       - REMOTE_CONFIG=minio:api-gateway
+      - DEBUG=true
     depends_on:
       - controller
       - redis
@@ -299,6 +300,7 @@ services:
     volumes:
       - ${TMP_HOME}/tmp/openwhisk/api-gateway-ssl:/etc/ssl:ro
       - ${TMP_HOME}/tmp/openwhisk/api-gateway-config/api-gateway/generated-conf.d:/etc/api-gateway/generated-conf.d
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro 
       - ${TMP_HOME}/tmp/openwhisk/rclone:/root/.config/rclone:rw
     ports:
       - "80:80"
