@@ -457,8 +457,8 @@ yolo: # build the docker image?
 	rm ./../../app/__main__.py
 #	| docker run -i adamhas/statefun-action:6 -compile main > yolo.zip
 #	zip -j - ./../../app/__main__.py ./../../app/faas_utils.py ./../../app/helpers.py ./../../app/my_types.py ./../../app/requirements.txt
-	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create yolov3 --kind python:3 yolov3.zip --web true --web-secure false --memory 1024
-	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api create /guest/yolov3 POST yolov3 --response-type json
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create yolov3 --kind python:3 yolov3.zip --web raw --web-secure false --memory 1024
+	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api create /guest/yolov3 POST yolov3 --response-type http
 #	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -ivd action create batcher --kind python:3 yolov3.zip --web true --web-secure false --memory 1024
 #	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i api create /guest/batcher POST batcher --response-type json
 #	WSK_CONFIG_FILE=$(WSK_CONFIG_FILE) $(WSK_CLI) -i action update "/guest/yolov3" --web true --web-secure false
