@@ -292,7 +292,7 @@ services:
       - PUBLIC_MANAGEDURL_PORT=9090
       - PUBLIC_MANAGEDURL_HOST=${DOCKER_COMPOSE_HOST}
       - REMOTE_CONFIG=minio:api-gateway
-      - DEBUG=true
+#      - DEBUG=true
     depends_on:
       - controller
       - redis
