@@ -65,7 +65,7 @@ endif
 #   To stop and cleanup the environment use: make destroy
 
 lean:	DOCKER_COMPOSE_FILE=docker-compose.yml
-lean:	run yolo
+lean:	run yolo batcher
 lean-full: download-src download-cli docker-pull-lean run yolo
 # quick-start-info
 
